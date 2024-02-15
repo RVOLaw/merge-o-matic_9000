@@ -1,7 +1,15 @@
-create a python program where a user can select a folder, and all uniquely numbered pdfs(use the first 9 numbers of the pdf name to identify uniqueness) 
-within that folder and subfolders will be merged into separate pdfs.
+create a python program where a user can select a folder and the program will search all subfolders for pdfs. 
+
+all uniquely numbered pdfs(use the first 9 numbers of the pdf name to identify uniqueness) 
+are sorted by a specified document type(starting from the 13th position in the file name) then a pdf with be created 
+created within a specified output folder.
 
 Example: in the folder 01 there are 2 subfolders - 02 and 03.
-within 02 there are two pdfs named 123123123 and two named 345345345.
-within folder 03 there are two pdfs 321321321 and two pdfs name 543543543. 
-the output should be 4 pdfs - 123123123.pdf, 345345345.pdf, 321321321.pdf, and 543543543.pdf each containing the merged pdfs with the unique name.
+within 02 there is one pdf named 123123123 - abc, one named 123123123 - cde one named 345345345 - abc, and one named 345345345 - cde.
+within 03 there is one pdf named 123123123 - efg, one named 321321321 - abc one named 321321321 - cde, and one named 345345345 - efg.
+given the specified document type order(abc, cde, efg) 
+the output should be 3 pdfs in the specified output folder - 123123123.pdf, 345345345.pdf, and 321321321.pdf, each containing the merged pdfs in order of the specified document type order.
+
+# Prioritized document types
+    prioritized_types = ["Account File", "Contract_Note_Acct Agr", "Truth in Lending", "Bill Statement - CHARGE OFF", "Bill Statement", "Pay History"]  
+    prioritized_types = ["Pay History", "Bill Statement", "Bill Statement - CHARGE OFF", "Truth in Lending", "Contract_Note_Acct Agr", "Account File"]  

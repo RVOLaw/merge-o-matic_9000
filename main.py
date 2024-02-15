@@ -1,67 +1,71 @@
 import os
 import re
-from PyPDF2 import PdfReader, PdfWriter
+from PyPDF2 import PdfMerger
 from PIL import Image
 
-def convert_tiff_to_pdf(tiff_path, pdf_path):
-    # Open TIFF file
-    with Image.open(tiff_path) as img:
-        # Convert to PDF
-        img.save(pdf_path, "PDF", resolution=100.0)
+def get_unique_number(pdf_name):
+    unique_number_match = re.search(r'\d{9}', pdf_name)
+    return unique_number_match.group() if unique_number_match else None
+
+def convert_tif_to_pdf(tif_path, pdf_path):
+    image = Image.open(tif_path)
+    pdf_path_with_extension = pdf_path if pdf_path.lower().endswith('.pdf') else pdf_path + '.pdf'
+    image.save(pdf_path_with_extension, 'PDF', resolution=100.0)
+    return pdf_path_with_extension
+
+def extract_document_type(file_name, document_type_order):
+    for doc_type in document_type_order:
+        if doc_type.lower() in file_name.lower():
+            return doc_type
+    return None
 
 def merge_pdfs(input_folder, output_folder):
-    # Create output folder if it doesn't exist
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-
-    # Iterate through the input folder and its subfolders
+    pdf_dict = {}
     for root, dirs, files in os.walk(input_folder):
-        for file_name in files:
-            # Use regex to extract the first 9 digits from the file name
-            match = re.match(r'\d{9}', file_name)
-            
-            if match:
-                unique_number = match.group()
-                input_file_path = os.path.join(root, file_name)
+        for file in files:
+            if file.lower().endswith(('.pdf', '.tif', '.tiff')):
+                unique_number = get_unique_number(file)
+                if unique_number:
+                    document_type = extract_document_type(file, document_type_order)
+                    print(document_type)
+                    file_path = os.path.join(root, file)
 
-                # Check if the file is a TIFF and convert to PDF
-                if input_file_path.lower().endswith(('.tif', '.tiff')):
-                    pdf_output_path = os.path.join(output_folder, f"{unique_number}.pdf")
-                    convert_tiff_to_pdf(input_file_path, pdf_output_path)
-                else:
-                    # Merge PDFs with the same unique number
-                    merge_pdfs_with_same_number(input_folder, unique_number, output_folder)
+                    if file.lower().endswith(('.tif', '.tiff')):
+                        pdf_path = convert_tif_to_pdf(file_path, file_path.replace('.tif', '_converted.pdf').replace('.tiff', '_converted.pdf'))
+                        pdf_dict.setdefault(unique_number, {}).update({document_type: pdf_path})
+                    else:
+                        pdf_dict.setdefault(unique_number, {}).update({document_type: file_path})
 
-def merge_pdfs_with_same_number(input_folder, unique_number, output_folder):
-    pdf_writer = PdfWriter()
+    for unique_number, document_types in pdf_dict.items():
+        merged_pdf = PdfMerger()
 
-    # Iterate through the input folder and its subfolders again
-    for root, dirs, files in os.walk(input_folder):
-        for file_name in files:
-            # Use regex to extract the first 9 digits from the file name
-            match = re.match(r'\d{9}', file_name)
-            
-            if match and match.group() == unique_number:
-                input_file_path = os.path.join(root, file_name)
-                
-                # Check if the file is a PDF
-                if input_file_path.lower().endswith('.pdf'):
-                    with open(input_file_path, 'rb') as pdf_file:
-                        pdf_reader = PdfReader(pdf_file)
-                        for page_num in range(len(pdf_reader.pages)):
-                            pdf_writer.add_page(pdf_reader.pages[page_num])
-                elif input_file_path.lower().endswith(('.tif', '.tiff')):
-                    # Ignore TIFF files, as they have already been converted to PDF
-                    pass
+        for document_type in document_type_order:
+            if document_type in document_types:
+                merged_pdf.append(document_types[document_type])
+            else:
+                print(f"Document type '{document_type}' not found for {unique_number}.pdf")
 
-    # Write the merged PDF to the output folder
-    output_pdf_path = os.path.join(output_folder, f"{unique_number}.pdf")
-    with open(output_pdf_path, 'wb') as output_pdf_file:
-        pdf_writer.write(output_pdf_file)
+        output_filename = os.path.join(output_folder, f"{unique_number}.pdf")
+
+        if merged_pdf.pages:
+            merged_pdf.write(output_filename)
+            merged_pdf.close()
+            print(f"PDF {output_filename} merged successfully.")
+        else:
+            print(f"No pages found for {unique_number}.pdf. Skipping.")
 
 if __name__ == "__main__":
     input_folder = r"P:\Users\Justin\output_test\merge-o"
     output_folder = r"P:\Users\Justin\output_test\merge-o\merge-o_test"
+    
+    document_type_order = [
+        "Account File",
+        "Contract_Note_Acct Agr",
+        "Truth in Lending",
+        "Bill Statement - CHARGE OFF",
+        "Bill Statement",
+        "Pay History"
+    ]
 
     merge_pdfs(input_folder, output_folder)
-    print("Files successfully merged.")
+    print("PDFs merged successfully.")
