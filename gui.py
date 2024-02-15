@@ -3,7 +3,6 @@ import tkinter as tk
 import subprocess
 from tkinter import filedialog
 from threading import Thread
-from pdf_utils import merge_pdfs  # Import merge_pdfs from pdf_utils
 
 class PdfMergeGUI:
     def __init__(self, master):
@@ -70,7 +69,6 @@ class PdfMergeGUI:
     def run_merge(self, input_folder, output_folder):
         try:
             self.set_status("Processing...")
-            merge_pdfs(input_folder, output_folder)
             self.set_status("PDFs merged successfully.")
 
             # Open file explorer and navigate into the output folder after successful merge

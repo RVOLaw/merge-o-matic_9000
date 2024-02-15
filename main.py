@@ -72,7 +72,6 @@ def merge_pdfs(input_folder, output_folder, document_type_order):
             merged_pdf.save(output_filename)
             merged_pdf.close()
             print(f"PDF {output_filename} merged successfully.")
-            open_output_folder(output_folder)
         else:
             print(f"No pages found for {unique_number}.pdf. Skipping.")
 
