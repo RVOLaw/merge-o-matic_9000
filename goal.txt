@@ -1,0 +1,7 @@
+create a python program where a user can select a folder, and all uniquely numbered pdfs(use the first 9 numbers of the pdf name to identify uniqueness) 
+within that folder and subfolders will be merged into separate pdfs.
+
+Example: in the folder 01 there are 2 subfolders - 02 and 03.
+within 02 there are two pdfs named 123123123 and two named 345345345.
+within folder 03 there are two pdfs 321321321 and two pdfs name 543543543. 
+the output should be 4 pdfs - 123123123.pdf, 345345345.pdf, 321321321.pdf, and 543543543.pdf each containing the merged pdfs with the unique name.
