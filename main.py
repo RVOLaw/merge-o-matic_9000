@@ -1,10 +1,8 @@
 import os
 import re
-import fitz  # PyMuPDF
+import fitz
 from PIL import Image
 from reportlab.pdfgen import canvas
-import tkinter as tk
-from gui import PdfMergeGUI  # Assuming the GUI class is defined in a file named gui.py
 
 def get_unique_number(pdf_name):
     unique_number_match = re.search(r'\d{9}', pdf_name)
@@ -76,28 +74,17 @@ def merge_pdfs(input_folder, output_folder, document_type_order):
             print(f"No pages found for {unique_number}.pdf. Skipping.")
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    gui = PdfMergeGUI(root)
-    root.mainloop()
+    input_folder = r"P:\Users\Justin\output_test\merge-o"
+    output_folder = r"P:\Users\Justin\output_test\merge-o\merge-o_test"
 
-    try:
-        # Check if the root window still exists before accessing widgets
-        if root.winfo_exists():
-            input_folder = gui.input_folder_entry.get()
-            output_folder = gui.output_folder_entry.get()
+    document_type_order = [
+        "Account File",
+        "Contract_Note_Acct Agr",
+        "Truth in Lending",
+        "Bill Statement - CHARGE OFF",
+        "Bill Statement",
+        "Pay History"
+    ]
 
-            document_type_order = [
-                "Account File",
-                "Contract_Note_Acct Agr",
-                "Truth in Lending",
-                "Bill Statement - CHARGE OFF",
-                "Bill Statement",
-                "Pay History"
-            ]
-
-            merge_pdfs(input_folder, output_folder, document_type_order)
-            print("PDFs merged successfully.")
-            
-    except tk.TclError:
-        # Ignore the TclError if the Tkinter application has been destroyed
-        pass
+    merge_pdfs(input_folder, output_folder, document_type_order)
+    print("PDFs merged successfully.")
