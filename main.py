@@ -23,10 +23,11 @@ class PDFMerger:
         image.save(pdf_path_with_extension, 'PDF', resolution=100.0)
         return pdf_path_with_extension
 
-    def extract_document_type(self, file_name, document_type_order):
-        for doc_type in document_type_order:
-            if doc_type.lower() in file_name.lower():
-                return doc_type
+    def extract_document_type(self, file_name):
+        match = re.match(r'(\d{9}) - (.+?) - \d{1,2}_\d{1,2}_\d{4} - Stm\. Date - (\d{1,2}_\d{1,2}_\d{4}) - (\d{9})', file_name)
+        if match:
+            unique_number, doc_type, stm_date, _ = match.groups()
+            return doc_type, unique_number, stm_date
         return None
 
     def is_skipped_file(self, file_name):
@@ -53,24 +54,26 @@ class PDFMerger:
                 if file.lower().endswith(('.pdf', '.tif', '.tiff', '.jpg', '.jpeg')):
                     unique_number = self.get_unique_number(file)
                     if unique_number:
-                        document_type = self.extract_document_type(file, document_type_order)
+                        document_info = self.extract_document_type(file)
+                        document_type = document_info[0] if document_info else None
                         file_path = os.path.join(root, file)
 
                         if file.lower().endswith(('.tif', '.tiff')):
                             pdf_path = self.convert_tif_to_pdf(file_path, file_path.replace('.tif', '_converted.pdf').replace('.tiff', '_converted.pdf'))
-                            pdf_dict.setdefault(unique_number, []).append((document_type, pdf_path))
+                            pdf_dict.setdefault(unique_number, []).append((document_type, pdf_path, document_info[2] if document_info else None))
                         elif file.lower().endswith(('.jpg', '.jpeg')):
                             pdf_path = self.convert_image_to_pdf(file_path, file_path.replace('.jpg', '_converted.pdf').replace('.jpeg', '_converted.pdf'))
-                            pdf_dict.setdefault(unique_number, []).append((document_type, pdf_path))
+                            pdf_dict.setdefault(unique_number, []).append((document_type, pdf_path, document_info[2] if document_info else None))
                         else:
-                            pdf_dict.setdefault(unique_number, []).append((document_type, file_path))
+                            pdf_dict.setdefault(unique_number, []).append((document_type, file_path, document_info[2] if document_info else None))
 
         for unique_number, document_list in pdf_dict.items():
-            document_list.sort(key=lambda x: document_type_order.index(x[0]) if x[0] in document_type_order else float('inf'))
+            # Sort documents based on the second date in descending order
+            document_list.sort(key=lambda x: (x[2] if x[2] is not None else ''), reverse=True)
 
             merged_pdf = fitz.open()
 
-            for _, document_path in document_list:
+            for _, document_path, _ in document_list:
                 pdf_document = fitz.open(document_path)
                 merged_pdf.insert_pdf(pdf_document)
 
@@ -84,8 +87,8 @@ class PDFMerger:
                 print(f"No pages found for {unique_number}.pdf. Skipping.")
 
 if __name__ == "__main__":
-    input_folder = r"P:\Departments\Pre-Jmt\Evan PreJMT\Documents\RSG\Docs Extracted\2024\02\Docs\ONB"
-    output_folder = r"P:\Departments\Staging\RSG\02.15.24\New folder"
+    input_folder = r"P:\Users\Justin\output_test\merge-o\01"
+    output_folder = r"P:\Users\Justin\output_test\merge-o\merge-o_test"
 
     pdf_merger = PDFMerger()
     pdf_merger.merge_pdfs(input_folder, output_folder)
