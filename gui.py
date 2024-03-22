@@ -8,7 +8,7 @@ from main import PDFMerger
 class PDFMergerGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Credit One Merger")
+        self.root.title("Creditor Merger")
 
         self.input_label = tk.Label(root, text="Input Folder:")
         self.input_label.grid(row=0, column=0, padx=10, pady=10)
